@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment
+.env
+
+# Streamlit
+.streamlit/
+
+# Data and models (large files — not versioned)
+data/raw/
+data/processed/
+data/faiss.index
+data/crisislens.db
+models/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Tooling
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# OS
+.DS_Store
+Thumbs.db
