@@ -1,147 +1,194 @@
-![CrisisLens](https://img.shields.io/badge/⬡-CrisisLens-58a6ff?style=flat-square&labelColor=0d1117&color=58a6ff)
+<div align="center">
+
+<br/>
+
+```
+ ██████╗██████╗ ██╗███████╗██╗███████╗██╗     ███████╗███╗   ██╗███████╗
+██╔════╝██╔══██╗██║██╔════╝██║██╔════╝██║     ██╔════╝████╗  ██║██╔════╝
+██║     ██████╔╝██║███████╗██║███████╗██║     █████╗  ██╔██╗ ██║███████╗
+██║     ██╔══██╗██║╚════██║██║╚════██║██║     ██╔══╝  ██║╚██╗██║╚════██║
+╚██████╗██║  ██║██║███████║██║███████║███████╗███████╗██║ ╚████║███████║
+ ╚═════╝╚═╝  ╚═╝╚═╝╚══════╝╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═══╝╚══════╝
+```
 
 **Real-Time Disaster Intelligence Platform**
 
-AI-powered crisis detection that monitors social media during disasters,
-classifies crisis signals, extracts geospatial intelligence, and routes
-actionable alerts to emergency responders — in under 3 seconds.
+*AI that turns social media chaos into structured crisis intelligence — in 2.22 seconds.*
 
-![](https://img.shields.io/badge/Python-3.11+-58a6ff?style=flat-square&labelColor=0d1117)
-![](https://img.shields.io/badge/DistilBERT-Fine--tuned-3fb950?style=flat-square&labelColor=0d1117)
-![](https://img.shields.io/badge/Groq-llama--3.1--8b-d29922?style=flat-square&labelColor=0d1117)
-![](https://img.shields.io/badge/Tests-56%2F56%20passing-3fb950?style=flat-square&labelColor=0d1117)
-![](https://img.shields.io/badge/Latency-2.22s%20e2e-f85149?style=flat-square&labelColor=0d1117)
-![](https://img.shields.io/badge/License-Apache%202.0-8b949e?style=flat-square&labelColor=0d1117)
+<br/>
 
----
+![Python](https://img.shields.io/badge/Python-3.11+-58a6ff?style=for-the-badge&labelColor=0d1117&logo=python&logoColor=58a6ff)
+![DistilBERT](https://img.shields.io/badge/DistilBERT-Fine--tuned-3fb950?style=for-the-badge&labelColor=0d1117&logo=huggingface&logoColor=3fb950)
+![Groq](https://img.shields.io/badge/Groq-llama--3.1--8b-d29922?style=for-the-badge&labelColor=0d1117)
+![Tests](https://img.shields.io/badge/Tests-56%2F56_passing-3fb950?style=for-the-badge&labelColor=0d1117)
+![Latency](https://img.shields.io/badge/Latency-2.22s_e2e-f85149?style=for-the-badge&labelColor=0d1117)
+![License](https://img.shields.io/badge/License-Apache_2.0-8b949e?style=for-the-badge&labelColor=0d1117)
 
-## The Problem
+<br/>
 
-During the 2024 Wayanad floods, thousands of people posted
-`"trapped on 3rd floor, need rescue, Meppadi"` on social media.
-Emergency responders had no system to parse this in real time.
-CrisisLens turns this unstructured noise into structured,
-prioritized, location-tagged intelligence — with an LLM
-explaining the reasoning chain behind every classification.
+</div>
 
 ---
 
-## Pipeline
+## ⚡ The Problem
+
+> *During the 2024 Wayanad floods, thousands of people posted*
+> *`"trapped on 3rd floor, need rescue, Meppadi"` on social media.*
+> *Emergency responders had no system to parse this in real time.*
+
+Traditional disaster monitoring is keyword search. **CrisisLens** is different — it classifies crisis type, scores urgency, resolves locations to coordinates, and asks an LLM *why* it flagged the event, all within 3 seconds of ingestion.
+
+---
+
+## 🧠 How It Works
 
 ```
-Social Media Post
-│
-▼
-[DistilBERT Classifier]  →  crisis type + severity score (0–1)
-│
-▼
-[spaCy NER]  →  locations, organizations, persons
-│
-▼
-[Nominatim Geocoder]  →  (lat, lng) coordinates
-│
-▼
-[Groq LLM + FAISS RAG]  →  chain-of-thought explanation
-│                      + recommended action
-▼
-[SQLite → FastAPI → WebSocket]
-│
-▼
-[Streamlit Ops Dashboard]  →  live map · KPIs · event feed
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│   "flooding in Wayanad, people trapped on rooftops, need rescue"   │
+│                              │                                      │
+└──────────────────────────────┼──────────────────────────────────────┘
+                               │
+              ┌────────────────▼─────────────────┐
+              │        DistilBERT Classifier      │
+              │   fine-tuned on 6,007 HumAID      │
+              │   crisis tweets                   │
+              │                                   │
+              │   labels  →  flood · medical      │
+              │   severity →  0.73 / 1.00         │
+              └────────────────┬─────────────────┘
+                               │
+              ┌────────────────▼─────────────────┐
+              │         spaCy NER Pipeline        │
+              │                                   │
+              │   locations → Wayanad · Kerala    │
+              │   needs     → rescue · trapped    │
+              │   coords    → (11.68, 76.13)      │
+              └────────────────┬─────────────────┘
+                               │
+              ┌────────────────▼─────────────────┐
+              │      Groq LLM + FAISS RAG         │
+              │                                   │
+              │   retrieves 3 similar past events │
+              │   explains WHY this is critical   │
+              │   recommends first response action│
+              └────────────────┬─────────────────┘
+                               │
+              ┌────────────────▼─────────────────┐
+              │   SQLite → FastAPI → WebSocket    │
+              │         → Streamlit Dashboard     │
+              │                                   │
+              │   live map · KPIs · event feed    │
+              │   auto-refresh every 8 seconds    │
+              └──────────────────────────────────┘
 ```
 
-**End-to-end latency: 2.22 seconds · 56/56 system checks passing**
+---
+
+## 🎯 What It Detects
+
+<table>
+<tr>
+<td align="center"><b>🌊 FLOOD</b></td>
+<td>Rising water levels · submerged roads · displaced families</td>
+<td align="center"><code>weight: 0.80</code></td>
+</tr>
+<tr>
+<td align="center"><b>🔥 FIRE</b></td>
+<td>Wildfires · building fires · evacuation orders</td>
+<td align="center"><code>weight: 0.75</code></td>
+</tr>
+<tr>
+<td align="center"><b>🏔️ EARTHQUAKE</b></td>
+<td>Structural damage · trapped survivors · aftershocks</td>
+<td align="center"><code>weight: 0.90</code></td>
+</tr>
+<tr>
+<td align="center"><b>🏥 MEDICAL</b></td>
+<td>Injuries · mass casualties · urgent medical aid</td>
+<td align="center"><code>weight: 1.00</code></td>
+</tr>
+</table>
+
+> Severity = `max(sigmoid(logit) × urgency_weight)` across active labels.
+> Events above **0.6** trigger the LLM reasoning layer.
 
 ---
 
-## What It Detects
-
-| Label | Description | Urgency Weight |
-|---|---|---|
-| `medical` | Injuries, casualties, urgent aid needed | 1.0 |
-| `earthquake` | Structural damage, trapped survivors | 0.9 |
-| `flood` | Rising water, displaced families | 0.8 |
-| `fire` | Wildfires, building fires, evacuations | 0.75 |
-
-Severity is computed as `max(sigmoid(logit) × urgency_weight)` 
-across active labels. Events above `0.6` trigger the LLM 
-reasoning layer.
-
----
-
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
-# 1. Clone and install
+# 1. Clone
 git clone https://github.com/Anandhu-p-tec/CrisisLens-Real-Time-Disaster-Intelligence-Platform.git
 cd CrisisLens-Real-Time-Disaster-Intelligence-Platform
+
+# 2. Install
 python -m venv .venv
-.venv\Scripts\Activate.ps1          # Windows
-# source .venv/bin/activate         # macOS/Linux
+.venv\Scripts\Activate.ps1        # Windows
+# source .venv/bin/activate       # macOS / Linux
 pip install -e ".[dev]"
-
-# 2. Configure
-cp .env.example .env
-# Add your Groq API key (free at console.groq.com)
-
-# 3. Download spaCy model
 python -m spacy download en_core_web_sm
 
-# 4. Prepare dataset and train classifier
+# 3. Configure
+cp .env.example .env
+# → Add your free Groq API key from console.groq.com
+
+# 4. Prepare data + train
 python scripts/download_data.py
 python scripts/prepare_dataset.py
-# Open notebooks/training.ipynb and run all cells
-# (Use Google Colab with T4 GPU for ~15 min training)
+# Open notebooks/training.ipynb in Google Colab (T4 GPU, ~15 min)
 ```
 
 ---
 
-## Running
+## 🖥️ Running
 
-Open three terminals:
-
-```
-# Terminal 1 — API
+```bash
+# Terminal 1 — API backend
 python scripts/start_api.py
 # → http://localhost:8000
 
-# Terminal 2 — Dashboard  
+# Terminal 2 — Ops dashboard
 python scripts/start_dashboard.py
 # → http://localhost:8501
 
-# Terminal 3 — Ingest events
+# Terminal 3 — Feed events into the system
 python scripts/ingest.py --events 100 --speed 3.0
 ```
 
+Open **http://localhost:8501** — watch events populate the live map in real time.
+
 ---
 
-## System Check
+## ✅ System Check
 
-```
+```bash
 python scripts/test_system.py
 ```
 
 ```
 ============================================================
-CRISISLENS — FULL SYSTEM CHECK
+  CRISISLENS — FULL SYSTEM CHECK
 ============================================================
-[1/8] ENVIRONMENT      ✅ all checks passed
-[2/8] IMPORTS          ✅ all 17 modules import cleanly
-[3/8] CLASSIFIER       ✅ severity=0.733 · labels=['flood','medical']
-[4/8] NER PIPELINE     ✅ locations=['Wayanad','Kerala','Meppadi']
-[5/8] SEVERITY SCORER  ✅ medical(0.900) > fire(0.675) ✓
-[6/8] DATABASE         ✅ insert + fetch verified
-[7/8] API ENDPOINTS    ✅ /health · /events · filters
-[8/8] END-TO-END       ✅ 2.22s latency · pipeline verified
+
+  [1/8] ENVIRONMENT      ✅  GROQ key · model path · dataset
+  [2/8] IMPORTS          ✅  17 modules import cleanly
+  [3/8] CLASSIFIER       ✅  severity=0.733 · ['flood','medical']
+  [4/8] NER PIPELINE     ✅  ['Wayanad', 'Kerala', 'Meppadi']
+  [5/8] SEVERITY SCORER  ✅  medical(0.900) > fire(0.675)
+  [6/8] DATABASE         ✅  insert + fetch verified
+  [7/8] API ENDPOINTS    ✅  /health · /events · filters
+  [8/8] END-TO-END       ✅  2.22s · pipeline complete
+
 ────────────────────────────────────────────────────────────
-  Passed  : 56/56   Failed: 0   Warnings: 0
+  Passed: 56/56    Failed: 0    Warnings: 0
   🎉 ALL CHECKS PASSED — system is demo-ready
 ────────────────────────────────────────────────────────────
 ```
 
 ---
 
-## API
+## 📡 API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -150,39 +197,43 @@ CRISISLENS — FULL SYSTEM CHECK
 | `GET` | `/events/{id}` | Single event with full LLM reasoning |
 | `WS` | `/ws/feed` | Real-time WebSocket push |
 
-```
-# Example: fetch critical flood events
+```bash
+# Critical flood events only
 curl "http://localhost:8000/events?label=flood&min_severity=0.7&limit=10"
 ```
 
 ---
 
-## Project Structure
+## 📁 Structure
 
 ```
 crisislens/
+│
 ├── app/
-│   ├── core/            # config · logging · exceptions
-│   ├── ingestion/       # stream simulator · RawPostSchema
-│   ├── classification/  # DistilBERT · severity scorer
-│   ├── extraction/      # spaCy NER · Nominatim geocoder
-│   ├── reasoning/       # Groq LLM · FAISS RAG · prompt builder
-│   ├── repository/      # SQLite · async CRUD
-│   ├── pipeline/        # CrisisProcessor orchestrator
-│   ├── api/             # FastAPI · WebSocket
-│   └── dashboard/       # Streamlit · Folium · Plotly
+│   ├── core/            ← config · logging · exceptions
+│   ├── ingestion/       ← stream simulator · RawPostSchema
+│   ├── classification/  ← DistilBERT · severity scorer
+│   ├── extraction/      ← spaCy NER · Nominatim geocoder
+│   ├── reasoning/       ← Groq LLM · FAISS RAG · prompts
+│   ├── repository/      ← SQLite · async CRUD
+│   ├── pipeline/        ← CrisisProcessor orchestrator
+│   ├── api/             ← FastAPI · WebSocket
+│   └── dashboard/       ← Streamlit · Folium · Plotly
+│
 ├── scripts/
-│   ├── start_api.py         # launch API
-│   ├── start_dashboard.py   # launch dashboard
-│   ├── ingest.py            # run event simulation
-│   ├── test_system.py       # 56-check health report
-│   ├── evaluate_pipeline.py # latency benchmark
-│   ├── train_classifier.py  # model training CLI
-│   └── build_faiss_index.py # rebuild vector index
+│   ├── start_api.py          ← launch API server
+│   ├── start_dashboard.py    ← launch dashboard
+│   ├── ingest.py             ← CLI event ingestion
+│   ├── test_system.py        ← 56-check health report
+│   ├── evaluate_pipeline.py  ← latency benchmark
+│   ├── train_classifier.py   ← model training CLI
+│   └── build_faiss_index.py  ← rebuild vector index
+│
 ├── notebooks/
-│   └── training.ipynb   # DistilBERT fine-tuning + evaluation
-├── tests/               # pytest unit + integration tests
-├── docs/                # architecture · design decisions
+│   └── training.ipynb   ← DistilBERT fine-tuning + evaluation
+│
+├── tests/               ← pytest unit + integration tests
+├── docs/                ← architecture · design decisions
 ├── Dockerfile
 ├── docker-compose.yml
 └── pyproject.toml
@@ -190,14 +241,27 @@ crisislens/
 
 ---
 
-## Stack
+## 🔬 Performance
+
+| Stage | Latency | Notes |
+|-------|---------|-------|
+| DistilBERT inference | ~0.8s | ThreadPoolExecutor, no event loop blocking |
+| spaCy NER | ~0.05s | Synchronous, sub-100ms |
+| Nominatim geocoding | ~1.1s | Rate-limited per ToS |
+| Groq LLM reasoning | ~2–3s | Only triggers at severity ≥ 0.6 |
+| SQLite write | <50ms | aiosqlite async |
+| **End-to-end (no LLM)** | **2.22s** | **Verified benchmark** |
+
+---
+
+## 🛠️ Stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|------------|
 | ML Classification | HuggingFace Transformers · DistilBERT |
-| NLP | spaCy en_core_web_sm |
-| LLM | Groq API · llama-3.1-8b-instant (free) |
-| Vector Search | FAISS IndexFlatL2 · sentence-transformers |
+| NLP | spaCy `en_core_web_sm` |
+| LLM | Groq API · `llama-3.1-8b-instant` (free tier) |
+| Vector Search | FAISS `IndexFlatL2` · `sentence-transformers` |
 | Geocoding | Geopy · Nominatim (OpenStreetMap) |
 | Backend | FastAPI · Uvicorn · WebSocket |
 | Database | SQLite · aiosqlite |
@@ -207,37 +271,47 @@ crisislens/
 
 ---
 
-## Design Principles
+## 🏗️ Design Principles
 
-Every layer communicates through typed Pydantic schemas —
-nothing crosses a module boundary as a raw dict. The pipeline
-is fully async from ingestion to WebSocket push. Blocking
-operations (model inference, geocoding) run in thread pool
-executors to avoid stalling the event loop. All configuration
-lives in `.env` — nothing is hardcoded.
-
----
-
-## Dataset
-
-Trained on **HumAID** crisis tweet dataset. Labels collapsed
-to 4 macro-classes. Training split: 70/15/15 stratified.
-
-| Label | Train samples |
-|-------|--------------|
-| medical | 2,784 |
-| flood | 1,898 |
-| fire | 667 |
-| earthquake | 658 |
+```
+Separation of concerns  →  each layer owns one responsibility
+Typed contracts         →  Pydantic schemas at every boundary, no raw dicts
+Config at the edge      →  all secrets in .env, nothing hardcoded
+Async by default        →  non-blocking from ingestion to WebSocket push
+Observable              →  structured logs at every stage, latency measured
+```
 
 ---
 
-## License
+## 📊 Dataset
+
+Trained on the **HumAID** crisis tweet corpus. Raw labels collapsed to 4 macro-classes for practical response utility.
+
+| Label | Samples | Source HumAID Labels |
+|-------|---------|----------------------|
+| `medical` | 2,784 | injured_or_dead_people · rescue_volunteering |
+| `flood` | 1,898 | flooding · infrastructure_damage |
+| `fire` | 667 | fires |
+| `earthquake` | 658 | earthquake |
+
+Training split: **70% train · 15% val · 15% test** · stratified by label.
+
+---
+
+## 📄 License
 
 Apache 2.0 — see [LICENSE](LICENSE)
 
 ---
 
 <div align="center">
-<sub>Built to address the information chaos during the 2024 Wayanad disaster.</sub>
+
+<br/>
+
+```
+Built to address the information chaos during the 2024 Wayanad disaster.
+```
+
+<br/>
+
 </div>
