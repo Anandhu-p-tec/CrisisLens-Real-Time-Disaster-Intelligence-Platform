@@ -33,18 +33,32 @@ class CrisisProcessor:
         extraction = self._ner.extract(post.post_id, post.text)
         if extraction.locations:
             extraction.coordinates = await self._geocoder.resolve(extraction.locations)
+
         reasoning = None
         recommended_action = None
         human_override = False
+
         _logger.info(
             "Classification complete: post=%s severity=%.2f threshold=%.2f",
             post.post_id,
             classification.severity,
             settings.LLM_SEVERITY_THRESHOLD,
         )
-        # Temporarily disable LLM due to httpx timeout issue
-        # LLM will be re-enabled after investigation
-        _logger.debug("LLM reasoning temporarily disabled for post=%s", post.post_id)
+
+        if classification.severity >= settings.LLM_SEVERITY_THRESHOLD:
+            try:
+                llm_result = await self._llm.reason(post.text, classification, extraction)
+                reasoning = llm_result.reasoning
+                recommended_action = llm_result.recommended_action
+                human_override = llm_result.human_override
+                _logger.info("LLM reasoning enabled for post=%s", post.post_id)
+            except Exception as exc:
+                _logger.warning(
+                    "LLM reasoning failed for post=%s: %s",
+                    post.post_id,
+                    exc,
+                )
+
         record = CrisisEventRecord(
             post_id=post.post_id,
             text=post.text,

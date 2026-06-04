@@ -5,12 +5,14 @@ import logging
 from app.core.logging import configure_logging
 from app.ingestion.stream_simulator import StreamSimulator
 from app.pipeline.processor import CrisisProcessor
+from app.repository.database import initialise_database
 
 
 async def run(n_events: int, speed_factor: float) -> None:
     configure_logging()
     logger = logging.getLogger(__name__)
     logger.info("Starting ingestion: n_events=%d speed_factor=%.1f", n_events, speed_factor)
+    await initialise_database()
     processor = CrisisProcessor()
     simulator = StreamSimulator(speed_factor=speed_factor)
     count = 0

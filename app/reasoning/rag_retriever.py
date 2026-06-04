@@ -7,7 +7,6 @@ import os
 
 import faiss
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 from app.core.config import settings
 
@@ -36,9 +35,11 @@ class RAGRetriever:
             self._post_ids = meta["post_ids"]
             _logger.info("FAISS index loaded: %d vectors", self._index.ntotal)
 
-    def _ensure_encoder(self) -> SentenceTransformer:
+    def _ensure_encoder(self):
         if self._encoder is None:
             _logger.info("Lazy-loading SentenceTransformer...")
+            from sentence_transformers import SentenceTransformer
+
             self._encoder = SentenceTransformer(EMBEDDING_MODEL)
             if self._index is None:
                 dim = self._encoder.get_sentence_embedding_dimension()
