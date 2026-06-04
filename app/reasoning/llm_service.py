@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 
@@ -55,19 +56,46 @@ class LLMService:
             "max_tokens": 300,
         }
         _logger.debug("Calling Groq API for post=%s", classification.post_id)
-        try:
-            response = await self._client.post(GROQ_API_URL, json=payload)
-            response.raise_for_status()
-            _logger.debug("Groq API returned status=%s", response.status_code)
-        except httpx.TimeoutException as exc:
-            _logger.error("Groq API timeout after 5s")
-            raise ReasoningError("Groq API timeout") from exc
-        except httpx.HTTPStatusError as exc:
-            _logger.error("Groq API error: %s", exc.response.status_code)
-            raise ReasoningError(f"Groq API error: {exc.response.status_code}") from exc
-        except httpx.RequestError as exc:
-            _logger.error("Groq request failed: %s", exc)
-            raise ReasoningError(f"Groq request failed: {exc}") from exc
+        max_attempts = 3
+        for attempt in range(1, max_attempts + 1):
+            try:
+                response = await self._client.post(GROQ_API_URL, json=payload)
+                response.raise_for_status()
+                _logger.debug("Groq API returned status=%s", response.status_code)
+                break
+            except httpx.TimeoutException as exc:
+                _logger.error("Groq API timeout after 5s")
+                raise ReasoningError("Groq API timeout") from exc
+            except httpx.HTTPStatusError as exc:
+                status = exc.response.status_code
+                if status == 429 or 500 <= status < 600:
+                    if attempt < max_attempts:
+                        delay = 2 ** (attempt - 1)
+                        _logger.warning(
+                            "Groq API returned %s; retrying in %.1fs (%d/%d)",
+                            status,
+                            delay,
+                            attempt,
+                            max_attempts,
+                        )
+                        await asyncio.sleep(delay)
+                        continue
+                _logger.error("Groq API error: %s", status)
+                raise ReasoningError(f"Groq API error: {status}") from exc
+            except httpx.RequestError as exc:
+                if attempt < max_attempts:
+                    delay = 2 ** (attempt - 1)
+                    _logger.warning(
+                        "Groq request failed; retrying in %.1fs (%d/%d): %s",
+                        delay,
+                        attempt,
+                        max_attempts,
+                        exc,
+                    )
+                    await asyncio.sleep(delay)
+                    continue
+                _logger.error("Groq request failed: %s", exc)
+                raise ReasoningError(f"Groq request failed: {exc}") from exc
 
         raw_text = response.json()["choices"][0]["message"]["content"].strip()
         _logger.debug("LLM raw response: %s", raw_text[:100])

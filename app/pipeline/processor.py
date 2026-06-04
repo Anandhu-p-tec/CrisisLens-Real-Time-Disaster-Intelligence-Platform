@@ -86,4 +86,4 @@ class CrisisProcessor:
 
     async def aclose(self) -> None:
         if self._llm is not None:
-            await self._llm._client.aclose()
+            await self._llm.aclose()
