@@ -64,17 +64,17 @@ def build_map(events: list[dict]) -> folium.Map:
         primary_label = labels[0] if labels else "unknown"
         icon_name = LABEL_ICONS.get(primary_label, "info-sign")
         popup_html = f"""
-        <div style="font-family:monospace;font-size:11px;color:#c9d1d9;
-                    background:#0d1117;padding:10px;border-radius:4px;
-                    border:1px solid #1e2d3d;max-width:260px;line-height:1.6">
-            <div style="color:{color};font-weight:600;margin-bottom:4px">
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#0d1117;
+                    background:#ffffff;padding:10px;border-radius:6px;border:1px solid #ddd;
+                    max-width:300px;line-height:1.4">
+            <div style="font-weight:700;color:{color};margin-bottom:6px">
                 {primary_label.upper()} &nbsp;·&nbsp; SEV {sev:.2f}
             </div>
-            <div style="color:#8b949e;margin-bottom:6px">
-                {event.get("location_raw") or "location unresolved"}
+            <div style="color:#555;font-size:12px;margin-bottom:6px">
+                {event.get("location_raw") or "Location unresolved"}
             </div>
-            <div style="color:#e6edf3">{event.get("text","")[:140]}…</div>
-            {f'<div style="color:#3fb950;margin-top:6px;font-size:10px">▶ {event.get("recommended_action","")}</div>' if event.get("recommended_action") else ""}
+            <div style="color:#333;margin-bottom:8px">{event.get("text","")[:180]}</div>
+            {f'<div style="background:#f0f4f8;padding:6px;border-radius:4px;color:#0b6;font-size:12px"><strong>Recommended:</strong> {event.get("recommended_action")}</div>' if event.get("recommended_action") else ""}
         </div>
         """
         folium.Marker(

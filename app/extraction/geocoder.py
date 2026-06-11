@@ -25,8 +25,38 @@ class Geocoder:
 
     def _geocode_sync(self, location: str) -> tuple[float, float] | None:
         try:
+            # Clean location: remove surrounding brackets/quotes and whitespace
+            cleaned = location.strip().strip("[]()\"' ")
+            # Skip overly vague single-token locations that won't geocode well
+            VAGUE_TOKENS = {
+                "india",
+                "city",
+                "district",
+                "area",
+                "region",
+                "village",
+                "state",
+                "north",
+                "south",
+                "east",
+                "west",
+                "central",
+                "nearby",
+                "here",
+                "there",
+                "near",
+                "town",
+                "suburb",
+                "market",
+            }
+            tokens = cleaned.split()
+            if len(tokens) == 1 and tokens[0].lower() in VAGUE_TOKENS:
+                _logger.debug("Skipping vague location token: %s", cleaned)
+                return None
+            # Bias search to India for better local results
+            query = f"{cleaned}, India"
             time.sleep(1.1)  # Nominatim ToS: max 1 request per second
-            result = self._geolocator.geocode(location, timeout=10)
+            result = self._geolocator.geocode(query, timeout=10)
             if result is not None:
                 return (result.latitude, result.longitude)
             return None

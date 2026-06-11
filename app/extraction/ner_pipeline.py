@@ -33,6 +33,30 @@ NEED_KEYWORDS: frozenset[str] = frozenset(
     }
 )
 
+SKIP_LOCATIONS: frozenset[str] = frozenset(
+    {
+        "india",
+        "city",
+        "district",
+        "area",
+        "region",
+        "village",
+        "state",
+        "north",
+        "south",
+        "east",
+        "west",
+        "central",
+        "nearby",
+        "here",
+        "there",
+        "near",
+        "town",
+        "suburb",
+        "market",
+    }
+)
+
 
 class NERPipeline:
     def __init__(self) -> None:
@@ -44,9 +68,16 @@ class NERPipeline:
             doc = self._nlp(text)
         except Exception as exc:
             raise ExtractionError(f"spaCy failed on post {post_id}") from exc
-        locations: list[str] = [
-            ent.text for ent in doc.ents if ent.label_ in ("GPE", "LOC", "FAC")
-        ]
+        locations: list[str] = []
+        for ent in doc.ents:
+            if ent.label_ not in ("GPE", "LOC", "FAC"):
+                continue
+            ent_text = ent.text.strip()
+            if len(ent_text) <= 3:
+                continue
+            if ent_text.lower() in SKIP_LOCATIONS:
+                continue
+            locations.append(ent_text)
         persons: list[str] = [ent.text for ent in doc.ents if ent.label_ == "PERSON"]
         orgs: list[str] = [ent.text for ent in doc.ents if ent.label_ == "ORG"]
         lowered = text.lower()

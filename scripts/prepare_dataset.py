@@ -9,6 +9,7 @@ from app.core.config import settings
 LABEL_MAP: dict[str, str | None] = {
     "flooding": "flood",
     "infrastructure_and_utility_damage": "flood",
+    "infrastructure_and_utilities": "flood",
     "fires": "fire",
     "earthquake": "earthquake",
     "injured_or_dead_people": "medical",
@@ -19,17 +20,31 @@ LABEL_MAP: dict[str, str | None] = {
     "sympathy_and_support": None,
     "affected_individuals": "medical",
     "displaced_people_and_evacuations": "flood",
-    "infrastructure_and_utilities": "flood",
     "donation_needs": None,
     "requests_or_urgent_needs": "medical",
     "response_efforts": None,
 }
 
 
+def _gather_raw_files() -> list[Path]:
+    raw_dir = Path("data/raw")
+    csv_files = sorted(raw_dir.glob("*.csv"))
+    tsv_files = sorted(raw_dir.glob("*.tsv"))
+
+    if csv_files:
+        return csv_files
+    return tsv_files
+
+
 def main() -> None:
     dfs = []
-    for tsv_file in Path("data/raw").glob("*.tsv"):
-        df = pd.read_csv(tsv_file, sep="\t")
+    raw_files = _gather_raw_files()
+    if not raw_files:
+        raise FileNotFoundError("No raw dataset files found in data/raw")
+
+    for data_file in raw_files:
+        kwargs = {"sep": "\t"} if data_file.suffix == ".tsv" else {}
+        df = pd.read_csv(data_file, **kwargs)
         dfs.append(df)
 
     df = pd.concat(dfs, ignore_index=True)
